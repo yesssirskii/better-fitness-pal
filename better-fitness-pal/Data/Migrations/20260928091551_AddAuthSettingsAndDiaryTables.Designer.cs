@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using better_fitness_pal;
@@ -11,9 +12,11 @@ using better_fitness_pal;
 namespace better_fitness_pal.Data.Migrations
 {
     [DbContext(typeof(BetterFitnessPalDbContext))]
-    partial class BetterFitnessPalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260928091551_AddAuthSettingsAndDiaryTables")]
+    partial class AddAuthSettingsAndDiaryTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
