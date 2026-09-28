@@ -2,6 +2,11 @@ using better_fitness_pal;
 using better_fitness_pal.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using better_fitness_pal.Auth;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +29,44 @@ builder.Services.AddIdentityCore<AppUser>(options =>
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+builder.Services.AddOptions<JwtOptions>()
+    .Bind(builder.Configuration.GetSection(JwtOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+var jwt = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
+          ?? throw new InvalidOperationException("Jwt settings not found.");
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwt.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwt.Audience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SigningKey)),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30),
+            NameClaimType = JwtRegisteredClaimNames.Sub,
+            RoleClaimType = "role"
+        };
+    });
+
+builder.Services.AddAuthorization();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<TokenService>();
+builder.Services.AddControllers();
+
 var app = builder.Build();
+
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
