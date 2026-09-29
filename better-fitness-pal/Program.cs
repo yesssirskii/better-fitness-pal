@@ -61,19 +61,20 @@ builder.Services.AddAuthorization();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddControllers();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
-
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseExceptionHandler();
 }
-
+app.UseStatusCodePages();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 app.UseHttpsRedirection();
 
 var summaries = new[]

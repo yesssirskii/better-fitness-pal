@@ -1,6 +1,58 @@
-@better_fitness_pal_HostAddress = http://localhost:5089
+@baseUrl = http://localhost:5089
 
-GET {{better_fitness_pal_HostAddress}}/weatherforecast/
-Accept: application/json
+### Register
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
 
-###
+{
+  "email": "test@example.com",
+  "userName": "testuser",
+  "password": "Password1!",
+  "firstName": "Test",
+  "lastName": "User",
+  "dateOfBirth": "1998-05-17"
+}
+
+> {%
+    client.global.set("accessToken", response.body.accessToken);
+    client.global.set("refreshToken", response.body.refreshToken);
+%}
+
+### Login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Password1!"
+}
+
+> {%
+    client.global.set("accessToken", response.body.accessToken);
+    client.global.set("refreshToken", response.body.refreshToken);
+%}
+
+### Me (requires a token)
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer {{accessToken}}
+
+### Refresh
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+> {%
+    client.global.set("accessToken", response.body.accessToken);
+    client.global.set("refreshToken", response.body.refreshToken);
+%}
+
+### Logout
+POST {{baseUrl}}/api/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
